@@ -47,7 +47,7 @@ const ScraperForm = ({ onStartScraping, isScrapingActive }) => {
     }
   };
     return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-8 transition-colors">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-8 transition-colors">
       <form onSubmit={handleSubmit}><div className="mb-4">          <label htmlFor="startMC" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 transition-colors">
             Starting MC/MX Number:
           </label><input

@@ -268,9 +268,10 @@ function App() {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 transition-colors">
+    <div className="min-h-screen bg-gray-200 dark:bg-gray-900 p-4 transition-colors">
       <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-colors">
         <div className="p-6">
+          <div className="bg-[url('/dispatchLight.png')] dark:bg-[url('/dispatchDark.png')] bg-no-repeat bg-contain h-10 w-96"></div>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 transition-colors">
               Carrier Data Scraper
