@@ -1,0 +1,70 @@
+/**
+ * Explicit CSS styles for accent colors to e/* Hover states */
+.bg-accent:hover,
+button.bg-accent:hover,
+a.bg-accent:hover,
+.hover\:bg-accent-hover:hover {
+  background-color: #007e42 !important;
+}hey work correctly
+ /* These styles are applied globally and use !important to override any conflicting styles
+ */
+
+/* Primary accent color for all "accent" classes */
+.bg-accent, 
+button.bg-accent,
+a.bg-accent {
+  background-color: #009e52 !important;
+}
+
+/* Success text */
+.text-accent {
+  color: #009e52 !important;
+}
+
+/* Theme toggling transitions */
+.transition-theme,
+body,
+button,
+a,
+.bg-accent,
+div,
+input,
+textarea,
+select {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+/* Focus states for form elements */
+*:focus-visible {
+  outline-color: #009e52 !important;
+}
+
+input:focus, 
+select:focus, 
+textarea:focus {
+  border-color: #009e52 !important;
+  box-shadow: 0 0 0 1px #009e52 !important;
+}
+
+/* Checkbox and radio buttons */
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background-color: #009e52 !important;
+  border-color: #009e52 !important;
+}
+
+/* Hover states */
+.bg-accent:hover,
+button.bg-accent:hover,
+a.bg-accent:hover,
+.hover\:bg-accent-hover:hover {
+  background-color: #007e42 !important;
+}
+
+/* Fix for theme toggle button */
+.theme-toggle-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}

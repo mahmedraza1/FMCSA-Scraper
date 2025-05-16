@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Define both theme colors and accent colors */
+:root {
+  /* Theme colors */
+  --bg-color: #f3f4f6;
+  --card-bg-color: #ffffff;
+  --text-color: #1f2937;
+  --text-muted: #6b7280;
+  --border-color: #d1d5db;
+  
+  /* Accent color - dark green */
+  --accent: #009e52;
+  --accent-hover: #007e42;
+  --accent-light: #00bf63;
+  
+  /* Transition for all theme properties */
+  --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark {
+  --bg-color: #1f2937;
+  --card-bg-color: #111827;
+  --text-color: #f3f4f6;
+  --text-muted: #9ca3af;
+  --border-color: #374151;
+}
+
+/* Apply accent color with utility classes */
+@layer utilities {
+  .bg-accent {
+    background-color: var(--accent) !important;
+  }
+  .hover\:bg-accent-hover:hover {
+    background-color: var(--accent-hover) !important;
+  }
+  .text-accent {
+    color: var(--accent) !important;
+  }
+  .dark .text-accent-light {
+    color: var(--accent-light) !important;
+  }
+  .border-accent {
+    border-color: var(--accent) !important;
+  }
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: var(--theme-transition);
+}
+
+/* Apply the accent color directly to elements that need it */
+.bg-accent {
+  background-color: var(--accent) !important;
+}
+
+.hover\:bg-accent-hover:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+/* Theme toggle button styling */
+.theme-toggle-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+/* Form input styling */
+input, select, textarea {
+  background-color: var(--card-bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  transition: var(--theme-transition);
+}
+
+input:focus, 
+select:focus, 
+textarea:focus {
+  border-color: var(--accent) !important;
+  outline-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent) !important;
+}
+
+/* Button styling */
+button.bg-accent, 
+button[type="submit"] {
+  background-color: var(--accent) !important;
+  color: white !important;
+  border: none;
+  transition: var(--theme-transition);
+}
+
+button.bg-accent:hover,
+button[type="submit"]:hover {
+  background-color: var(--accent-hover) !important;
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  accent-color: var(--accent);
+}
