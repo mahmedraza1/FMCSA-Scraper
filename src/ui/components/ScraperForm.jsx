@@ -1,12 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const ScraperForm = ({ onStartScraping, isScrapingActive }) => {
   const [startMC, setStartMC] = useState('');
   const [count, setCount] = useState('');
-  const [concurrencyLimit, setConcurrencyLimit] = useState('');
   const [includeNotAuthorized, setIncludeNotAuthorized] = useState(false);
   const [formErrors, setFormErrors] = useState({});
-    const validateForm = () => {
+  const [maxRecords, setMaxRecords] = useState(1000); // Default max records
+  
+  // Fetch max records setting from the server on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+        const response = await fetch(`${API_URL}/admin/settings`);
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.settings) {
+            // Update max records from server settings
+            setMaxRecords(data.settings.maxRecordsPerScrape || 1000);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching max records setting:', error);
+        // Use default value on error
+      }
+    };
+    
+    fetchSettings();
+  }, []);
+  
+  const validateForm = () => {
     const errors = {};
     
     const startMCNum = startMC === '' ? 0 : parseInt(startMC, 10);
@@ -15,33 +39,26 @@ const ScraperForm = ({ onStartScraping, isScrapingActive }) => {
     }
     
     const countNum = count === '' ? 0 : parseInt(count, 10);
-    if (count === '' || isNaN(countNum) || countNum <= 0 || countNum > 1000) {
-      errors.count = 'Please enter a valid count between 1 and 1000';
-    }
-    
-    const concurrencyLimitNum = concurrencyLimit === '' ? 0 : parseInt(concurrencyLimit, 10);
-    if (concurrencyLimit === '' || isNaN(concurrencyLimitNum) || concurrencyLimitNum <= 0 || concurrencyLimitNum > 20) {
-      errors.concurrencyLimit = 'Please enter a valid concurrency limit between 1 and 20';
+    if (count === '' || isNaN(countNum) || countNum <= 0 || countNum > maxRecords) {
+      errors.count = `Please enter a valid count between 1 and ${maxRecords}`;
     }
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
-    const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     
     if (validateForm()) {
       // Use default values if fields are left empty
       const startMCNum = parseInt(startMC || '1635500', 10);
       const countNum = parseInt(count || '10', 10);
-      const concurrencyLimitNum = parseInt(concurrencyLimit || '5', 10);
         
       // Generate array of MC numbers
       const mcNumbers = Array.from({ length: countNum }, (_, i) => startMCNum + i);
       
       onStartScraping({
         mcNumbers,
-        concurrencyLimit: concurrencyLimitNum,
         includeNotAuthorized
       });
     }
@@ -90,35 +107,8 @@ const ScraperForm = ({ onStartScraping, isScrapingActive }) => {
           />
           {formErrors.count && (
             <div className="mt-1 text-sm text-red-600 dark:text-red-400 transition-colors">{formErrors.count}</div>
-          )}
-          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors">
-            How many records to scrape (default: 10, max: 1000)
-          </div>
-        </div>
-        
-        <div className="mb-6">
-          <label htmlFor="concurrencyLimit" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 transition-colors">
-            Concurrency Limit:
-          </label>
-          <input
-            type="number"
-            id="concurrencyLimit"
-            value={concurrencyLimit}
-            onChange={(e) => setConcurrencyLimit(e.target.value)}
-            disabled={isScrapingActive}
-            placeholder="5"
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-accent 
-              bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors
-              ${formErrors.concurrencyLimit 
-                ? 'border-red-500 dark:border-red-400' 
-                : 'border-gray-300 dark:border-gray-600'
-              }`}
-          />
-          {formErrors.concurrencyLimit && (
-            <div className="mt-1 text-sm text-red-600 dark:text-red-400 transition-colors">{formErrors.concurrencyLimit}</div>
-          )}
-          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors">
-            Higher values can speed up scraping but may cause rate limiting or errors. You can increase or decrease this value based on your internet speed and the target website's response time and your device capabilities.
+          )}          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 transition-colors">
+            How many records to scrape (default: 10, max: {maxRecords})
           </div>
         </div>
         

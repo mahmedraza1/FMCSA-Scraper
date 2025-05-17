@@ -9,10 +9,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Path to proxies JSON storage file 
-const proxiesStoragePath = path.join(__dirname, '../../..', 'proxies.json');
+const proxiesStoragePath = path.join(process.cwd(), 'proxies.json');
+console.log('Proxies JSON storage path:', proxiesStoragePath);
 
 // Legacy text file path (for backwards compatibility)
-const legacyProxiesFilePath = path.join(__dirname, '../../..', 'proxieslist.txt');
+const legacyProxiesFilePath = path.join(process.cwd(), 'proxieslist.txt');
 
 /**
  * Save proxies to JSON storage file
@@ -21,6 +22,9 @@ const legacyProxiesFilePath = path.join(__dirname, '../../..', 'proxieslist.txt'
  */
 export function saveProxies(proxies, currentIndex = 0) {
   try {
+    console.log('Saving proxies to:', proxiesStoragePath);
+    console.log('Current working directory:', process.cwd());
+    
     fs.writeFileSync(proxiesStoragePath, JSON.stringify({
       updatedAt: new Date().toISOString(),
       proxies: proxies,
@@ -41,6 +45,9 @@ export function saveProxies(proxies, currentIndex = 0) {
  */
 export function getProxies() {
   // Try to load from JSON storage first
+  console.log('Checking for proxies.json at:', proxiesStoragePath);
+  console.log('File exists?', fs.existsSync(proxiesStoragePath));
+  
   if (fs.existsSync(proxiesStoragePath)) {
     try {
       const data = JSON.parse(fs.readFileSync(proxiesStoragePath, 'utf8'));
@@ -156,8 +163,12 @@ function parseProxiesFromFile() {
  * @param {Array} indexesToDelete - Array of indexes to delete
  * @returns {Object} Object with success status and updated proxies list
  */
-export function deleteProxies(indexesToDelete) {
+export async function deleteProxies(indexesToDelete) {
   try {
+    // Dynamically import the proxyManager for current index
+    const proxyManagerModule = await import('../utils/proxyManager.js');
+    const proxyManager = proxyManagerModule.default;
+    
     let proxies = getProxies();
     const originalLength = proxies.length;
     

@@ -129,10 +129,12 @@ export async function scrapeData(
   progressCallback = () => {}, 
   options = {}
 ) {
-  const { includeNotAuthorized = false } = options;
-  // Make sure concurrencyLimit is a number and has a default value
-  const concurrencyLimit = parseInt(options.concurrencyLimit) || 5;
-  console.log(`Using concurrencyLimit: ${concurrencyLimit}, type: ${typeof concurrencyLimit}`);
+  const { includeNotAuthorized = false, sessionId = null } = options;
+  
+  // Get concurrency limit from appSettings instead of options
+  const { getSetting } = await import('../config/appSettings.js');
+  const concurrencyLimit = parseInt(getSetting('concurrencyLimit') || 5);
+  console.log(`Using admin-set concurrencyLimit: ${concurrencyLimit}`);
   
   // Initialize proxy manager with proxies from config or environment
   const proxies = options.proxies || getProxies();
@@ -146,6 +148,39 @@ export async function scrapeData(
     });
   } else {
     console.log('No proxies configured. Using direct connection.');
+  }
+  
+  // Variable to track if scraping should be stopped
+  let stopRequested = false;
+  
+  // Register a stop handler if a sessionId is provided
+  if (sessionId) {
+    // Import and register with the session manager
+    const { registerActiveSession, deregisterActiveSession } = await import('./sessionManager.js');
+    registerActiveSession(sessionId, () => {
+      stopRequested = true;
+      console.log(`Stop requested for scraping session ${sessionId}`);
+    });
+    
+    // Clean up when done
+    const cleanupSession = () => {
+      if (sessionId) {
+        deregisterActiveSession(sessionId);
+      }
+    };
+    
+    // Ensure cleanup happens even if there's an error
+    process.on('uncaughtException', (err) => {
+      console.error('Uncaught exception:', err);
+      cleanupSession();
+    });
+    
+    // Cleanup on normal termination
+    process.on('SIGINT', () => {
+      console.log('Process interrupted');
+      cleanupSession();
+      process.exit(0);
+    });
   }
   
   const startTime = Date.now();
@@ -168,12 +203,20 @@ export async function scrapeData(
     totalBatches: batchCount,
     totalRecords: count 
   });
-  
-  let processed = 0;
+    let processed = 0;
   let successful = 0;
   
   // Process MC numbers in parallel with limited concurrency
   for (let i = 0; i < mcNumbers.length; i += concurrencyLimit) {
+    // Check if stop was requested before processing the next batch
+    if (stopRequested) {
+      progressCallback({
+        type: 'manualStop',
+        message: 'Scraping stopped by user request'
+      });
+      break;
+    }
+    
     // Get the current batch
     const batch = mcNumbers.slice(i, i + concurrencyLimit);
     const batchNumber = Math.floor(i/concurrencyLimit) + 1;
@@ -296,15 +339,21 @@ export async function scrapeData(
       break;
     }
   }
-  
-  progressCallback({
+    progressCallback({
     type: 'complete',
     totalRecords: count,
     processedRecords: processed,
     successfulRecords: successful,
     executionTime: (Date.now() - startTime) / 1000,
-    earlyStopped: shouldStopScraping
+    earlyStopped: shouldStopScraping || stopRequested,
+    manualStop: stopRequested
   });
+
+  // Clean up the session if we registered one
+  if (sessionId) {
+    const { deregisterActiveSession } = await import('./sessionManager.js');
+    deregisterActiveSession(sessionId);
+  }
 
   return allData;
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProxyManager from './components/ProxyManager';
+import SettingsManager from './components/SettingsManager';
 import ThemeToggle from './components/ThemeToggle';
 import { logout } from './utils/auth';
 
@@ -50,6 +51,16 @@ function Admin() {
                 </button>
                 <button
                   className={`py-2 px-4 font-medium transition-colors ${
+                    activeTab === 'settings'
+                      ? 'text-accent dark:text-accent-light border-b-2 border-accent dark:border-accent-light'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                  }`}
+                  onClick={() => setActiveTab('settings')}
+                >
+                  Settings
+                </button>
+                <button
+                  className={`py-2 px-4 font-medium transition-colors ${
                     activeTab === 'stats'
                       ? 'text-accent dark:text-accent-light border-b-2 border-accent dark:border-accent-light'
                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
@@ -62,6 +73,8 @@ function Admin() {
             </div>
             
             {activeTab === 'proxies' && <ProxyManager />}
+            
+            {activeTab === 'settings' && <SettingsManager />}
             
             {activeTab === 'stats' && (
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors">

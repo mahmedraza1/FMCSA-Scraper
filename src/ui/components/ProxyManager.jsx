@@ -10,7 +10,7 @@ const ProxyManager = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const fileInputRef = useRef(null);
   
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   
   // Fetch proxy status on component mount and periodically
   useEffect(() => {
@@ -23,6 +23,24 @@ const ProxyManager = () => {
     
     return () => clearInterval(interval);
   }, []);
+  
+  // Set newProxies when proxyStats changes and configuredProxies exist
+  useEffect(() => {
+    if (proxyStats?.configuredProxies?.length > 0) {
+      const configuredProxiesStr = proxyStats.configuredProxies.join('\n');
+      // Only update if the textarea is empty or if the proxies have changed (not just on every fetch)
+      if (
+        !newProxies ||
+        (newProxies.split('\n').sort().join('\n') !== proxyStats.configuredProxies.sort().join('\n'))
+      ) {
+        setNewProxies(configuredProxiesStr);
+      }
+    }
+    // If there are no configured proxies, clear the textarea
+    if (proxyStats?.configuredProxies?.length === 0) {
+      setNewProxies('');
+    }
+  }, [proxyStats]);  // removed newProxies dependency to avoid race conditions
   
   // Fetch proxy status from API
   const fetchProxyStatus = async () => {

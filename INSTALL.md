@@ -40,14 +40,14 @@ This guide will help you install and deploy the Carrier Data Scraper as a web ap
 
 3. **Access the Application**
 
-   Open your browser and navigate to: [http://localhost:3000](http://localhost:3000)
+   Open your browser and navigate to: [http://localhost:5175](http://localhost:5175)
 
 ## Environment Variables
 
 You can customize the application by setting the following environment variables:
 
-- `PORT`: The port on which the server will listen (default: 3000)
-- `VITE_API_URL`: The URL for the API endpoints (default: http://localhost:3000/api)
+- `PORT`: The port on which the server will listen (default: 3001)
+- `VITE_API_URL`: The URL for the API endpoints (default: http://localhost:3001/api)
 
 ## Troubleshooting
 

@@ -17,6 +17,8 @@ design.tldr
 Todos.md
 proxieslist.txt
 .env.example
+*.bak
+*.new
 
 
 # Editor directories and files

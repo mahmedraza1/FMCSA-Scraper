@@ -1,7 +1,7 @@
 // filepath: /home/mark/Scraper/src/ui/components/ScraperProgress.jsx
 import { useEffect, useRef } from 'react';
 
-const ScraperProgress = ({ progress, logs }) => {
+const ScraperProgress = ({ progress, logs, onStopScraping }) => {
   const logsEndRef = useRef(null);
   
   // Auto-scroll to the bottom of logs
@@ -24,6 +24,7 @@ const ScraperProgress = ({ progress, logs }) => {
     if (logText.startsWith('🚀')) return 'border-l-4 border-accent text-accent dark:text-accent-light';
     if (logText.startsWith('📊')) return 'border-l-4 border-purple-500 text-purple-800 dark:text-purple-300';
     if (logText.startsWith('ℹ️')) return 'border-l-4 border-gray-500 text-gray-800 dark:text-gray-300';
+    if (logText.startsWith('⛔')) return 'border-l-4 border-red-500 text-red-800 dark:text-red-300';
     return 'border-l-4 border-accent text-gray-800 dark:text-gray-300';
   };
 
@@ -59,6 +60,21 @@ const ScraperProgress = ({ progress, logs }) => {
           </div>
         </div>
       </div>
+      
+      {/* Stop button */}
+      {onStopScraping && (
+        <div className="px-4 py-2 flex justify-center">
+          <button
+            onClick={onStopScraping}
+            className="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md flex items-center transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+            </svg>
+            Stop Scraping
+          </button>
+        </div>
+      )}
       
       <div className="border-t border-gray-200 dark:border-gray-700 transition-colors">
         <div className="p-2 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 font-medium text-sm text-gray-700 dark:text-gray-300 transition-colors">

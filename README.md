@@ -48,14 +48,14 @@ A web application with React UI and Express.js backend that scrapes carrier data
    npm run start
    ```
 
-3. Access the application at `http://localhost:3000`
+3. Access the application at `http://localhost:3001`
 
 ## Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
 
 ```
-VITE_API_URL=http://localhost:3000/api
+VITE_API_URL=http://localhost:3001/api
 ADMIN_API_KEY=your-secure-api-key-here
 ADMIN_USERNAME=mark
 ADMIN_PASSWORD=mark@6275

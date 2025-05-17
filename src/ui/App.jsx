@@ -20,8 +20,10 @@ function App() {
   const [error, setError] = useState(null);
   const [geoRestrictionWarning, setGeoRestrictionWarning] = useState(false);
   const [sseManager, setSseManager] = useState(null);
+  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [isStoppingInProgress, setIsStoppingInProgress] = useState(false);
   
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
   // Initialize SSE manager on component mount
   useEffect(() => {
@@ -84,17 +86,17 @@ function App() {
     setLogs([]);
     setError(null);
     setGeoRestrictionWarning(false);
+    setIsStoppingInProgress(false);
     
-    // Make sure concurrencyLimit is a number
-    const concurrencyLimit = parseInt(params.concurrencyLimit) || 5;
-    params.concurrencyLimit = concurrencyLimit;
+    // Get the count of MC numbers to display in UI
+    const mcNumbersCount = params.mcNumbers.length;
     
     setProgress({
       processed: 0,
-      total: params.mcNumbers.length,
+      total: mcNumbersCount,
       successful: 0,
       batchNumber: 0,
-      totalBatches: Math.ceil(params.mcNumbers.length / concurrencyLimit)
+      totalBatches: 0 // Will be updated with server response
     });
     
     try {
@@ -115,6 +117,9 @@ function App() {
       if (data.success) {
         // Set up SSE connection with the returned session ID
         if (data.sessionId) {
+          // Save the session ID for stopping later
+          setCurrentSessionId(data.sessionId);
+          
           // Connect using the SSE manager
           if (sseManager) {
             const connected = sseManager.connect(data.sessionId);
@@ -133,11 +138,54 @@ function App() {
       } else {
         setError(data.error || 'Unknown error occurred');
         setIsScrapingActive(false);
+        setCurrentSessionId(null);
+        setIsStoppingInProgress(false);
       }
     } catch (error) {
       console.error('Error during scraping:', error);
       setError(error.message);
       setIsScrapingActive(false);
+      setCurrentSessionId(null);
+      setIsStoppingInProgress(false);
+    }
+  };
+  
+  // Function to handle stopping an active scrape
+  const handleStopScraping = async () => {
+    if (!currentSessionId || !isScrapingActive || isStoppingInProgress) {
+      return;
+    }
+    
+    try {
+      // Mark that stopping is in progress to prevent multiple clicks
+      setIsStoppingInProgress(true);
+      
+      // Add a log message
+      setLogs(prev => [...prev, `⛔ Sending request to stop scraping...`]);
+      
+      // Send the stop request to the API
+      const response = await fetch(`${API_URL}/stop-scrape`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId: currentSessionId }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // The server will send a 'manualStop' message via SSE
+        // We'll handle actually stopping the UI in the handleProgressUpdate function
+        setLogs(prev => [...prev, `⏹️ Stop request sent successfully`]);
+      } else {
+        setLogs(prev => [...prev, `❌ Failed to stop scraping: ${data.error}`]);
+        setIsStoppingInProgress(false);
+      }
+    } catch (error) {
+      console.error('Error stopping scrape:', error);
+      setLogs(prev => [...prev, `❌ Error stopping scraping: ${error.message}`]);
+      setIsStoppingInProgress(false);
     }
   };
   
@@ -205,10 +253,10 @@ function App() {
         setProgress(prev => ({
           ...prev,
           total: progressData.totalRecords,
-          totalBatches: progressData.totalBatches || Math.ceil(progressData.totalRecords / 5) // fallback to default batch size
+          totalBatches: progressData.totalBatches || Math.ceil(progressData.totalRecords / (progressData.concurrencyLimit || 5))
         }));
-        console.log(`Initializing with totalBatches: ${progressData.totalBatches}`);
-        setLogs(prev => [...prev, `🚀 Starting to scrape ${progressData.totalRecords} records in ${progressData.totalBatches} batches`]);
+        console.log(`Initializing with totalBatches: ${progressData.totalBatches}, concurrencyLimit: ${progressData.concurrencyLimit}`);
+        setLogs(prev => [...prev, `🚀 Starting to scrape ${progressData.totalRecords} records in ${progressData.totalBatches} batches (concurrency: ${progressData.concurrencyLimit || 'default'})`]);
         break;
         
       case 'batchStart':
@@ -257,6 +305,11 @@ function App() {
         setShowResults(false);
         break;
         
+      case 'manualStop':
+        setLogs(prev => [...prev, `⏹️ ${progressData.message || 'Scraping stopped by user request'}`]);
+        setIsStoppingInProgress(false);
+        break;
+        
       case 'earlyStopped':
         setLogs(prev => [...prev, `⛔ ${progressData.message}`]);
         break;
@@ -266,7 +319,9 @@ function App() {
         break;
         
       case 'complete':
-        if (progressData.earlyStopped) {
+        if (progressData.manualStop) {
+          setLogs(prev => [...prev, `⏹️ Scraping stopped by user: ${progressData.successfulRecords}/${progressData.processedRecords} records processed in ${progressData.executionTime}s`]);
+        } else if (progressData.earlyStopped) {
           setLogs(prev => [...prev, `⚠️ Scraping stopped early: ${progressData.successfulRecords}/${progressData.processedRecords} records processed in ${progressData.executionTime}s`]);
         } else {
           setLogs(prev => [...prev, `✅ Scraping completed: ${progressData.successfulRecords || progressData.results?.length || 0}/${progressData.totalRecords || progress.total} records in ${progressData.executionTime || '?'}s`]);
@@ -285,6 +340,8 @@ function App() {
         // Set scraping to inactive and close the SSE connection
         setTimeout(() => {
           setIsScrapingActive(false);
+          setCurrentSessionId(null);
+          setIsStoppingInProgress(false);
           if (sseManager) {
             sseManager.disconnect();
           }
@@ -299,6 +356,8 @@ function App() {
         if (progressData.fatal) {
           setTimeout(() => {
             setIsScrapingActive(false);
+            setCurrentSessionId(null);
+            setIsStoppingInProgress(false);
             if (sseManager) {
               sseManager.disconnect();
             }
@@ -385,6 +444,7 @@ function App() {
             <ScraperProgress 
               progress={progress} 
               logs={logs}
+              onStopScraping={handleStopScraping}
             />
           )}
         </div>
