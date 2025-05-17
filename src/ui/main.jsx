@@ -1,8 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
 import './accent.css' // Import explicit accent styles
 import App from './App.jsx'
+import Admin from './Admin.jsx'
+import Login from './Login.jsx'
+import RequireAuth from './components/RequireAuth.jsx'
 import './toggleTheme.js' // Import theme toggle utility for debugging
 import './themeDebug.js' // Import additional theme debugging tools
 import { ThemeProvider } from './components/ThemeProvider'; // Import the ThemeProvider
@@ -26,10 +30,38 @@ const initializeTheme = () => {
 // Run immediately
 initializeTheme();
 
+// Set up router
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: (
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
+    )
+  },
+  {
+    path: '/login',
+    element: (
+      <ThemeProvider>
+        <Login />
+      </ThemeProvider>
+    )
+  },
+  {
+    path: '/admin',
+    element: (
+      <ThemeProvider>
+        <RequireAuth>
+          <Admin />
+        </RequireAuth>
+      </ThemeProvider>
+    )
+  }
+]);
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ThemeProvider>
-      <App />
-    </ThemeProvider>
+    <RouterProvider router={router} />
   </StrictMode>,
 )

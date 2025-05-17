@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import ScraperForm from './components/ScraperForm'
 import ScraperProgress from './components/ScraperProgress'
 import ResultsModal from './components/ResultsModal'
 import ThemeToggle from './components/ThemeToggle'
+import { SSEConnectionManager } from './utils/sseConnection'
 
 function App() {
   const [isScrapingActive, setIsScrapingActive] = useState(false);
@@ -18,9 +19,63 @@ function App() {
   const [showResults, setShowResults] = useState(false);
   const [error, setError] = useState(null);
   const [geoRestrictionWarning, setGeoRestrictionWarning] = useState(false);
-  const [eventSource, setEventSource] = useState(null);
+  const [sseManager, setSseManager] = useState(null);
   
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+  // Initialize SSE manager on component mount
+  useEffect(() => {
+    const manager = new SSEConnectionManager(API_URL);
+    
+    // Set up event handlers
+    manager.onMessage(handleProgressUpdate);
+    
+    manager.onError((error) => {
+      console.error('SSE manager error:', error);
+      setLogs(prev => [...prev, `❌ Connection error: ${error.message}`]);
+      
+      // If scraping is still active, show an error
+      if (isScrapingActive) {
+        setError('Lost connection to the server. Please try again.');
+      }
+    });
+    
+    manager.onConnected((data) => {
+      console.log('SSE connection established with session ID:', data.sessionId);
+      setLogs(prev => [...prev, `🔌 Connected to server with session: ${data.sessionId}`]);
+    });
+    
+    manager.onDisconnected(() => {
+      console.log('SSE connection closed');
+      // Only show disconnection message if scraping is still active
+      if (isScrapingActive) {
+        setLogs(prev => [...prev, `🔌 Disconnected from server`]);
+      }
+    });
+    
+    setSseManager(manager);
+    
+    // Clean up on component unmount
+    return () => {
+      manager.disconnect();
+    };
+  }, []);
+  
+  // Update isScrapingActive dependencies for the error handler
+  useEffect(() => {
+    if (sseManager) {
+      sseManager.onError((error) => {
+        console.error('SSE manager error:', error);
+        setLogs(prev => [...prev, `❌ Connection error: ${error.message}`]);
+        
+        // If scraping is still active, show an error
+        if (isScrapingActive) {
+          setError('Lost connection to the server. Please try again.');
+          setIsScrapingActive(false);
+        }
+      });
+    }
+  }, [isScrapingActive, sseManager]);
 
   // Function to handle scraping action
   const handleStartScraping = async (params) => {
@@ -42,9 +97,6 @@ function App() {
       totalBatches: Math.ceil(params.mcNumbers.length / concurrencyLimit)
     });
     
-    // Set up SSE connection
-    setupEventSource();
-    
     try {
       const response = await fetch(`${API_URL}/scrape`, {
         method: 'POST',
@@ -61,65 +113,35 @@ function App() {
       const data = await response.json();
       
       if (data.success) {
-        setResults(data.results);
-        // Only show results if we don't have an active geo-restriction warning
-        if (!geoRestrictionWarning) {
-          setShowResults(true);
+        // Set up SSE connection with the returned session ID
+        if (data.sessionId) {
+          // Connect using the SSE manager
+          if (sseManager) {
+            const connected = sseManager.connect(data.sessionId);
+            if (connected) {
+              // Add initial log message with session ID
+              setLogs(prev => [...prev, `🔑 Scraping session started: ${data.sessionId}`]);
+            } else {
+              throw new Error('Failed to establish server connection');
+            }
+          } else {
+            throw new Error('SSE manager not initialized');
+          }
         } else {
-          // Explicitly ensure results are not shown with geo-restriction warnings
-          setShowResults(false);
+          throw new Error('No session ID returned from server');
         }
       } else {
         setError(data.error || 'Unknown error occurred');
+        setIsScrapingActive(false);
       }
     } catch (error) {
       console.error('Error during scraping:', error);
       setError(error.message);
-    } finally {
-      // Give a short delay before closing to ensure any final events are processed
-      setTimeout(() => {
-        setIsScrapingActive(false);
-        // Close SSE connection
-        if (eventSource) {
-          eventSource.close();
-          setEventSource(null);
-        }
-      }, 500);
+      setIsScrapingActive(false);
     }
   };
   
-  // Setup SSE connection
-  const setupEventSource = () => {
-    // Close existing connection if any
-    if (eventSource) {
-      eventSource.close();
-    }
-    
-    // Create new SSE connection
-    const newEventSource = new EventSource(`${API_URL}/progress-events`);
-    
-    newEventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      handleProgressUpdate(data);
-    };
-    
-    newEventSource.onerror = (error) => {
-      console.error('SSE connection error:', error);
-      newEventSource.close();
-      setEventSource(null);
-    };
-    
-    setEventSource(newEventSource);
-  };
-  
-  // Clean up SSE connection on component unmount
-  useEffect(() => {
-    return () => {
-      if (eventSource) {
-        eventSource.close();
-      }
-    };
-  }, [eventSource]);
+  // No longer needed - using SSE manager instead
   
   // Ensure results modal is closed whenever geo-restriction warning is shown
   useEffect(() => {
@@ -131,12 +153,18 @@ function App() {
   // Function to handle CSV export
   const handleSaveToCsv = async (data) => {
     try {
+      // Get the current session ID if connected
+      let sessionId = null;
+      if (sseManager) {
+        sessionId = sseManager.sessionId;
+      }
+      
       const response = await fetch(`${API_URL}/save-csv`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ data }),
+        body: JSON.stringify({ data, sessionId }),
       });
       
       if (response.headers.get('Content-Type').includes('text/csv')) {
@@ -167,7 +195,8 @@ function App() {
     }
   };
   
-  const handleProgressUpdate = (progressData) => {
+  // Define handleProgressUpdate before using it in useEffect
+  const handleProgressUpdate = useCallback((progressData) => {
     console.log('Progress update:', progressData);
     
     // Update progress based on data type
@@ -217,7 +246,7 @@ function App() {
         setGeoRestrictionWarning(true);
         // Make sure results modal is closed when geo-restriction errors occur
         setShowResults(false);
-        setError(`Access to SAFER website may be blocked. Detected ${progressData.error.match(/\((\d+)\/(\d+)\)/)[1]} of 5 consecutive access errors. If this continues, scraping will stop automatically.`);
+        setError(`Access to SAFER website may be blocked. Detected ${progressData.error.match(/\((\d+)\/(\d+)\)/)?.[1] || '?'} of 5 consecutive access errors. If this continues, scraping will stop automatically.`);
         break;
         
       case 'geoRestrictionLimit':
@@ -240,7 +269,7 @@ function App() {
         if (progressData.earlyStopped) {
           setLogs(prev => [...prev, `⚠️ Scraping stopped early: ${progressData.successfulRecords}/${progressData.processedRecords} records processed in ${progressData.executionTime}s`]);
         } else {
-          setLogs(prev => [...prev, `✅ Scraping completed: ${progressData.successfulRecords}/${progressData.totalRecords} records in ${progressData.executionTime}s`]);
+          setLogs(prev => [...prev, `✅ Scraping completed: ${progressData.successfulRecords || progressData.results?.length || 0}/${progressData.totalRecords || progress.total} records in ${progressData.executionTime || '?'}s`]);
         }
         if (progressData.results) {
           setResults(progressData.results);
@@ -252,11 +281,29 @@ function App() {
             setShowResults(false);
           }
         }
+        
+        // Set scraping to inactive and close the SSE connection
+        setTimeout(() => {
+          setIsScrapingActive(false);
+          if (sseManager) {
+            sseManager.disconnect();
+          }
+        }, 500);
         break;
         
       case 'error':
         setLogs(prev => [...prev, `❌ Error: ${progressData.message}`]);
         setError(progressData.message);
+        
+        // Set scraping to inactive and close the SSE connection if this is a fatal error
+        if (progressData.fatal) {
+          setTimeout(() => {
+            setIsScrapingActive(false);
+            if (sseManager) {
+              sseManager.disconnect();
+            }
+          }, 500);
+        }
         break;
         
       default:
@@ -265,7 +312,7 @@ function App() {
           setLogs(prev => [...prev, `ℹ️ ${progressData.message}`]);
         }
     }
-  };
+  }, [progress.total, geoRestrictionWarning, sseManager]);
   
   return (
     <div className="min-h-screen bg-gray-200 dark:bg-gray-900 p-4 transition-colors">
@@ -347,7 +394,7 @@ function App() {
         isOpen={showResults && !geoRestrictionWarning} 
         onClose={() => setShowResults(false)}
         results={results}
-        onExportCSV={() => handleSaveToCsv(results)}
+        onExportCSV={(dataToExport) => handleSaveToCsv(dataToExport)}
       />
     </div>
   );

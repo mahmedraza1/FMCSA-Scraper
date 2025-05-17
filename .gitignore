@@ -15,6 +15,9 @@ dist-react
 .env.production
 design.tldr
 Todos.md
+proxieslist.txt
+.env.example
+
 
 # Editor directories and files
 .vscode/*

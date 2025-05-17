@@ -4,6 +4,8 @@ import { parse } from 'json2csv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import proxyManager from './proxyManager.js';
+import { getProxies } from '../config/proxy.js';
 
 // Function to extract company data from the HTML
 function extractCompanyData(html) {
@@ -45,23 +47,57 @@ function extractCompanyData(html) {
 async function fetchMCHtml(MCNumber) {
   const url = `https://safer.fmcsa.dot.gov/query.asp?query_type=queryCarrierSnapshot&query_param=MC_MX&query_string=${MCNumber}`;
   try {
-    const res = await fetch(url);
-    if (res.status === 403) {
-      console.error(`❌ Access Forbidden (403) for MC/MX Number ${MCNumber} - Possible geo-restriction or IP block`);
-      throw new Error('ACCESS_FORBIDDEN');
+    // Check if we have proxies available
+    if (proxyManager.proxies.length > 0) {
+      // Use fetchWithProxy which handles rotation and retries
+      const res = await proxyManager.fetchWithProxy(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml',
+          'Accept-Language': 'en-US,en;q=0.9',
+        }
+      });
+      
+      if (res.status === 403) {
+        console.error(`❌ Access Forbidden (403) for MC/MX Number ${MCNumber} - Possible geo-restriction or IP block`);
+        throw new Error('ACCESS_FORBIDDEN');
+      }
+      
+      if (!res.ok) {
+        console.error(`❌ Failed to fetch MC/MX Number ${MCNumber} - Status: ${res.status}`);
+        return null;
+      }
+      
+      return await res.text();
+    } else {
+      // No proxies, use direct connection
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml',
+          'Accept-Language': 'en-US,en;q=0.9',
+        }
+      });
+      
+      if (res.status === 403) {
+        console.error(`❌ Access Forbidden (403) for MC/MX Number ${MCNumber} - Possible geo-restriction or IP block`);
+        throw new Error('ACCESS_FORBIDDEN');
+      }
+      
+      if (!res.ok) {
+        console.error(`❌ Failed to fetch MC/MX Number ${MCNumber} - Status: ${res.status}`);
+        return null;
+      }
+      
+      return await res.text();
     }
-    if (!res.ok) {
-      console.error(`❌ Failed to fetch MC/MX Number ${MCNumber} - Status: ${res.status}`);
-      return null;
-    }
-    return await res.text();
   } catch (error) {
     if (error.message === 'ACCESS_FORBIDDEN') {
       throw error; // Re-throw the error to be caught by the caller
     }
     // Network errors (like disconnections) should be treated similarly to 403 errors
-    if (error.message && error.message.includes('fetch')) {
-      console.error(`❌ Network error for MC/MX Number ${MCNumber} - Possible VPN disconnect or network issue`);
+    if (error.message && (error.message.includes('fetch') || error.message.includes('proxy'))) {
+      console.error(`❌ Network error for MC/MX Number ${MCNumber} - Possible VPN disconnect or network issue: ${error.message}`);
       throw new Error('ACCESS_FORBIDDEN'); // Treat network errors like geo-restriction
     }
     console.error(`❌ Error fetching MC/MX Number ${MCNumber}: ${error.message}`);
@@ -97,6 +133,20 @@ export async function scrapeData(
   // Make sure concurrencyLimit is a number and has a default value
   const concurrencyLimit = parseInt(options.concurrencyLimit) || 5;
   console.log(`Using concurrencyLimit: ${concurrencyLimit}, type: ${typeof concurrencyLimit}`);
+  
+  // Initialize proxy manager with proxies from config or environment
+  const proxies = options.proxies || getProxies();
+  if (proxies && proxies.length > 0) {
+    proxyManager.setProxies(proxies);
+    console.log(`Initialized proxy manager with ${proxies.length} proxies.`);
+    
+    // Do a quick health check at the start
+    await proxyManager.healthCheckAllProxies().catch(err => {
+      console.warn(`Proxy health check failed: ${err.message}`);
+    });
+  } else {
+    console.log('No proxies configured. Using direct connection.');
+  }
   
   const startTime = Date.now();
   const allData = [];
