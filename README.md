@@ -39,7 +39,7 @@ A web application with React UI and Express.js backend that scrapes carrier data
 ## Production Deployment
 
 1. Build the application:
-   ```
+   ```bash
    npm run build
    ```
 
@@ -54,11 +54,11 @@ A web application with React UI and Express.js backend that scrapes carrier data
 
 Create a `.env` file in the root directory with the following variables:
 
-```
+``` JSON
 VITE_API_URL=http://localhost:3001/api
 ADMIN_API_KEY=your-secure-api-key-here
-ADMIN_USERNAME=mark
-ADMIN_PASSWORD=mark@6275
+ADMIN_USERNAME= [Your Username Here]
+ADMIN_PASSWORD= [Your Password Here]
 ```
 
 For production, update these values to your production settings.
