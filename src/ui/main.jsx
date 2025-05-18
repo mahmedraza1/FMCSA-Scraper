@@ -10,6 +10,8 @@ import RequireAuth from './components/RequireAuth.jsx'
 import './toggleTheme.js' // Import theme toggle utility for debugging
 import './themeDebug.js' // Import additional theme debugging tools
 import { ThemeProvider } from './components/ThemeProvider'; // Import the ThemeProvider
+import { initAntiDevTools } from '../utils/antiDevTools.js'; // Import anti-devtools utilities
+import NavBar from './components/NavBar.jsx'
 
 // Ensure theme is initialized before rendering
 const initializeTheme = () => {
@@ -36,6 +38,7 @@ const router = createBrowserRouter([
     path: '/',
     element: (
       <ThemeProvider>
+        <NavBar />
         <App />
       </ThemeProvider>
     )
@@ -44,6 +47,7 @@ const router = createBrowserRouter([
     path: '/login',
     element: (
       <ThemeProvider>
+        <NavBar />
         <Login />
       </ThemeProvider>
     )
@@ -53,6 +57,7 @@ const router = createBrowserRouter([
     element: (
       <ThemeProvider>
         <RequireAuth>
+          <NavBar />
           <Admin />
         </RequireAuth>
       </ThemeProvider>
@@ -65,3 +70,52 @@ createRoot(document.getElementById('root')).render(
     <RouterProvider router={router} />
   </StrictMode>,
 )
+
+// Initialize simplified anti-devtools protections
+// In production builds, this will be active automatically
+// For testing in development, we're forcing it to be enabled
+initAntiDevTools({
+  disableRightClick: true, // Block all right-clicks sitewide
+  disableKeyboardShortcuts: true, // Only blocks developer tool shortcuts
+  forceEnable: true, // Force enable for pre-production testing
+  onDevToolsOpen: () => {
+    // Security event logging
+    try {
+      // Log to server
+      fetch('/api/security/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event: 'devtools_shortcut_blocked',
+          timestamp: new Date().toISOString(),
+          url: window.location.href,
+          userAgent: navigator.userAgent
+        }),
+      }).catch(() => {}); // Silent fail
+    } catch (e) {
+      // Ignore errors
+    }
+  },
+  onTamperAttempt: (details) => {
+    // Log tampering attempts
+    try {
+      fetch('/api/security/log', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event: 'security_tamper_attempt',
+          details: details,
+          timestamp: new Date().toISOString(),
+          url: window.location.href,
+          userAgent: navigator.userAgent
+        }),
+      }).catch(() => {}); // Silent fail
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+});

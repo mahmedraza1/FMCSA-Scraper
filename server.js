@@ -1,3 +1,55 @@
+/**
+ * Transportation Company Scraper - Backend Server
+ * 
+ * This Express.js server provides API endpoints for the Transportation Company Scraper
+ * web application, handling both the scraping functionality and security features.
+ * 
+ * SECURITY FEATURES:
+ * 
+ * 1. Anti-Developer Tools Protection:
+ *    - Client-side detection of developer tools being opened
+ *    - Automatic security event logging when tampering is detected
+ *    - Multiple layers of protection against code inspection
+ * 
+ * 2. Server-Side Security:
+ *    - Rate limiting for security-sensitive endpoints
+ *    - Detailed security event logging
+ *    - Unique event IDs for audit trails
+ * 
+ * 3. Production Hardening:
+ *    - Code obfuscation in production builds
+ *    - Console output suppression
+ *    - Protection against browser inspection tools
+ * 
+ * For complete setup instructions, see README.md
+ */
+
+/**
+ * Transportation Company Scraper - Backend Server
+ * 
+ * This Express.js server provides API endpoints for the Transportation Company Scraper
+ * web application, handling both the scraping functionality and security features.
+ * 
+ * SECURITY FEATURES:
+ * 
+ * 1. Anti-Developer Tools Protection:
+ *    - Client-side detection of developer tools being opened
+ *    - Automatic security event logging when tampering is detected
+ *    - Multiple layers of protection against code inspection
+ * 
+ * 2. Server-Side Security:
+ *    - Rate limiting for security-sensitive endpoints
+ *    - Detailed security event logging
+ *    - Unique event IDs for audit trails
+ * 
+ * 3. Production Hardening:
+ *    - Code obfuscation in production builds
+ *    - Console output suppression
+ *    - Protection against browser inspection tools
+ * 
+ * For complete setup instructions, see README.md
+ */
+
 // server.js - Express.js backend for Scraper app
 import express from 'express';
 import cors from 'cors';
@@ -505,6 +557,68 @@ app.post('/api/proxy/rotate', authenticateAdmin, async (req, res) => {
       success: false, 
       error: error.message || 'An error occurred while rotating proxy'
     });
+  }
+});
+
+// Security event logging endpoint
+app.post('/api/security/log', (req, res) => {
+  try {
+    const { event, timestamp, url, userAgent, details } = req.body;
+    
+    // Get IP address
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    
+    // Generate a security event ID
+    const eventId = `SEC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    
+    // Log security event with more detailed information
+    console.warn(`SECURITY EVENT [${eventId}]: ${event} at ${timestamp}`);
+    console.warn(`URL: ${url}`);
+    console.warn(`User Agent: ${userAgent}`);
+    console.warn(`IP Address: ${ip}`);
+    
+    if (details) {
+      console.warn('Event Details:', JSON.stringify(details));
+    }
+    
+    // In a production environment, you might want to:
+    // 1. Log to a secure database
+    // 2. Send alerts to admins
+    // 3. Take actions like temporarily blocking the IP
+    
+    // Implementation of advanced security logging (commented for reference)
+    /*
+    const securityLogEntry = {
+      eventId,
+      event,
+      timestamp, 
+      url,
+      userAgent,
+      ip,
+      details,
+    };
+    
+    // Store in database or file
+    fs.appendFileSync(
+      path.join(process.cwd(), 'security_logs.json'), 
+      JSON.stringify(securityLogEntry) + '\n', 
+      'utf8'
+    );
+    
+    // Check for repeated violations
+    const recentEvents = getRecentSecurityEvents(ip);
+    if (recentEvents.length > 5) {
+      // Implement temporary IP blocking
+      blockIP(ip, 3600); // Block for 1 hour
+    }
+    */
+    
+    // Return a 200 OK without any meaningful data
+    res.status(200).send();
+  } catch (error) {
+    // Log the error but don't expose it to the client
+    console.error('Error logging security event:', error);
+    res.status(200).send(); // Still return 200 to not indicate success/failure
   }
 });
 
