@@ -299,7 +299,7 @@ function App() {
         
       case 'geoRestrictionLimit':
         setLogs(prev => [...prev, `⛔ ${progressData.message}`]);
-        setError('Detected 5 consecutive geo-restriction errors. Scraping has been automatically stopped to prevent wasted resources. Please connect to a U.S. VPN or try a different location in your VPN before scraping again.');
+        setError('Detected 5 consecutive geo-restriction errors. Scraping has been automatically stopped to prevent wasted resources. Please follow this to make sure your app works.');
         setGeoRestrictionWarning(true);
         // Prevent showing results when geo-restriction occurs
         setShowResults(false);
@@ -404,10 +404,10 @@ function App() {
                 <div className="mt-3">
                   <p className="font-medium text-sm text-yellow-800 dark:text-yellow-300">Possible solutions:</p>
                   <ul className="list-disc pl-5 text-sm mt-1 text-yellow-800 dark:text-yellow-200">
-                    <li>Use a VPN with a U.S. server</li>
-                    <li>If you're already using a VPN, try selecting a different location</li>
-                    <li>Try a different network connection</li>
-                    <li>Wait a few hours if your IP has been temporarily blocked</li>
+                    <li>Connect to Site administration, contact details are in top right side of Side(NavBar)</li>
+                    <li>Tell then Your Location</li>
+                    <li>Tell them if you're using VPN</li>
+                    <li>Wait a few hours if you were using it for a while</li>
                   </ul>
                   <button 
                     className="mt-4 px-4 py-2 bg-accent text-white rounded hover:bg-accent-hover active:bg-accent-dark w-full transition-colors"

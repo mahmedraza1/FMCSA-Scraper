@@ -1,9 +1,5 @@
 {
-  "updatedAt": "2025-05-17T11:58:57.665Z",
-  "proxies": [
-    "socks5://cbaharoon:uDfujsIKut@150.241.201.195:49156",
-    "socks5://cbaharoon:uDfujsIKut@87.98.97.42:49156",
-    "socks5://cbaharoon:uDfujsIKut@193.39.209.39:49156"
-  ],
-  "currentIndex": 1
+  "updatedAt": "2025-05-18T13:00:34.407Z",
+  "proxies": [],
+  "currentIndex": -1
 }
