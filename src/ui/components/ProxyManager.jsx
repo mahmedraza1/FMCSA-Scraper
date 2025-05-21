@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { API_URL } from '../utils/env';
 
 const ProxyManager = () => {
   const [proxyStats, setProxyStats] = useState(null);
@@ -9,8 +10,6 @@ const ProxyManager = () => {
   const [selectedProxies, setSelectedProxies] = useState([]);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const fileInputRef = useRef(null);
-  
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   
   // Fetch proxy status on component mount and periodically
   useEffect(() => {

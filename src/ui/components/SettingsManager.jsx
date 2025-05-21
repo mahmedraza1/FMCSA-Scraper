@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_URL } from '../utils/env';
 
 function SettingsManager() {
   const [settings, setSettings] = useState({
@@ -12,8 +13,6 @@ function SettingsManager() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
   
   // Fetch settings on component mount
   useEffect(() => {

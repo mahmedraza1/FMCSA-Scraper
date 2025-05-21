@@ -108,9 +108,13 @@ const PORT = process.env.PORT || 3001; // Using port 3001 to avoid conflicts
 
 // Middleware
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' ? ['https://yourdomain.com', 'http://localhost:3001'] : '*',
+  // In production, dynamically determine allowed origins or use an environment variable
+  origin: process.env.NODE_ENV === 'production' 
+    ? (process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*')
+    : '*',
   methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'dist')));

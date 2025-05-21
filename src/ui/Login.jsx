@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ThemeToggle from './components/ThemeToggle';
 import { login } from './utils/auth';
+import { API_URL } from './utils/env';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -15,8 +16,6 @@ function Login() {
   
   // Get the intended destination or default to /admin
   const from = location.state?.from?.pathname || '/admin';
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
   // Handle login form submission
   const handleSubmit = async (e) => {

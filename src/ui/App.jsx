@@ -4,6 +4,7 @@ import ScraperProgress from './components/ScraperProgress'
 import ResultsModal from './components/ResultsModal'
 import ThemeToggle from './components/ThemeToggle'
 import { SSEConnectionManager } from './utils/sseConnection'
+import { API_URL } from './utils/env'
 
 function App() {
   const [isScrapingActive, setIsScrapingActive] = useState(false);
@@ -22,8 +23,6 @@ function App() {
   const [sseManager, setSseManager] = useState(null);
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [isStoppingInProgress, setIsStoppingInProgress] = useState(false);
-  
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
   // Initialize SSE manager on component mount
   useEffect(() => {
