@@ -1,0 +1,33 @@
+SOFTWARE DEPLOYMENT & USAGE LICENSE AGREEMENT
+
+This document certifies that Mark (the Developer) has received a partial payment of **PKR 5,000** from **Dispatch.pk** (the Client) as of May 25, 2025.
+
+The Developer agrees to deploy the current working version of the software project (scraper + management panel), which will be hosted under the Dispatch.pk ecosystem using the domain or alias **Dispatching.press**.
+
+---
+
+TERMS OF AGREEMENT
+
+1. OWNERSHIP & INTELLECTUAL PROPERTY  
+   All core code, logic, and original files remain the sole property of the Developer (Mark). This includes but is not limited to scraping algorithms, backend logic, authentication modules, and front-end UI/UX designs. Only compiled (`dist`) and required minimal backend files are provided for deployment.
+
+2. HOSTING & USAGE RIGHTS  
+   The Dispatch.pk is permitted to host and provide access to the deployed application via iFrame or integration under the Dispatch.pk brand for their paying customers. This license is granted **for usage only** and does not include resale, redistribution, or modification rights.
+
+3. REMAINING PAYMENT  
+   The remaining balance (as agreed upon verbally or via chat) is to be paid to the Developer **after deployment**, as per mutual discussion and finalization.
+
+4. LIMITATIONS  
+   - The Dispatch.pk shall not attempt to reverse engineer, copy, or resell the software.  
+   - The software may not be reused in any project outside of Dispatch.pk and Dispatching.press unless further licensed.
+
+5. TERMINATION  
+   If the agreed payment is not completed post-deployment, or if the software is misused against the above terms, the Developer retains the right to revoke usage or take legal action.
+
+---
+
+Issued by: Mark (Developer)  developer.mahmedraza@gmail.com
+To: Dispatch.pk (Client)  
+Date: May 25, 2025
+Location: Jaranwala, Pakistan
+
