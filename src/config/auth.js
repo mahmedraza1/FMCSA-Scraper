@@ -10,8 +10,8 @@ dotenv.config();
 
 // Get credentials from environment variables with fallbacks
 const adminCredentials = {
-  username: process.env.ADMIN_USERNAME || 'mark',
-  password: process.env.ADMIN_PASSWORD || 'mark@6275',
+  username: process.env.ADMIN_USERNAME || 'dispatchpk',
+  password: process.env.ADMIN_PASSWORD || 'Morse123@',
 };
 
 export { adminCredentials };

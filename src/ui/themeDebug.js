@@ -1,18 +1,18 @@
 /**
  * This file contains helper functions to debug theme issues.
  * These functions will be attached to the window object.
+ * Modified to support light mode only.
  */
 
 // Function to check theme status
 window.checkThemeStatus = function() {
-  const isDark = document.documentElement.classList.contains('dark');
-  const storedTheme = localStorage.getItem('theme');
-  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Always light mode now
+  const isDark = false;
+  const storedTheme = localStorage.getItem('theme'); // Should be 'light'
   
   console.log('=== Theme Status Report ===');
-  console.log('Dark mode class on document:', isDark ? 'YES' : 'NO');
+  console.log('Using light mode only (dark mode disabled)');
   console.log('Theme stored in localStorage:', storedTheme || 'NOT SET');
-  console.log('System prefers dark:', systemPrefersDark ? 'YES' : 'NO');
   console.log('colorScheme CSS property:', document.documentElement.style.colorScheme);
   
   // Check CSS variables
@@ -21,9 +21,8 @@ window.checkThemeStatus = function() {
   console.log('--accent:', style.getPropertyValue('--accent'));
   
   return {
-    isDark,
+    isDark: false,
     storedTheme,
-    systemPrefersDark,
     colorScheme: document.documentElement.style.colorScheme,
     variables: {
       bgColor: style.getPropertyValue('--bg-color'),
@@ -32,22 +31,20 @@ window.checkThemeStatus = function() {
   };
 };
 
-// Function to force dark mode
-window.setDarkMode = function() {
-  document.documentElement.classList.add('dark');
-  document.documentElement.style.colorScheme = 'dark';
-  localStorage.setItem('theme', 'dark');
-  console.log('Dark mode forced');
-  return true;
-};
-
-// Function to force light mode
+// Function to ensure light mode (dark mode removed)
 window.setLightMode = function() {
   document.documentElement.classList.remove('dark');
   document.documentElement.style.colorScheme = 'light';
   localStorage.setItem('theme', 'light');
-  console.log('Light mode forced');
+  console.log('Light mode enforced (this is the only mode available)');
   return true;
 };
 
-console.log('Theme debugging tools loaded! Use window.checkThemeStatus(), window.setDarkMode(), or window.setLightMode() to debug theme issues.');
+// Alias for backward compatibility
+window.setDarkMode = function() {
+  console.log('Dark mode is disabled. Using light mode instead.');
+  window.setLightMode();
+  return false;
+};
+
+console.log('Theme debugging tools loaded! Note: This app now only uses light mode.');

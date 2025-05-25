@@ -11,22 +11,16 @@ import './toggleTheme.js' // Import theme toggle utility for debugging
 import './themeDebug.js' // Import additional theme debugging tools
 import { ThemeProvider } from './components/ThemeProvider'; // Import the ThemeProvider
 import { initAntiDevTools } from '../utils/antiDevTools.js'; // Import anti-devtools utilities
-import NavBar from './components/NavBar.jsx'
+// import NavBar from './components/NavBar.jsx'
 
-// Ensure theme is initialized before rendering
+// Ensure light theme is initialized before rendering
 const initializeTheme = () => {
-  const savedTheme = localStorage.getItem('theme');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  // Always use light mode
+  document.documentElement.classList.remove('dark');
+  document.documentElement.style.colorScheme = 'light';
+  localStorage.setItem('theme', 'light');
   
-  if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-    document.documentElement.classList.add('dark');
-    document.documentElement.style.colorScheme = 'dark';
-  } else {
-    document.documentElement.classList.remove('dark');
-    document.documentElement.style.colorScheme = 'light';
-  }
-  
-  console.log('Theme initialized from main.jsx:', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+  console.log('Light mode initialized from main.jsx (dark mode disabled)');
 };
 
 // Run immediately
@@ -38,7 +32,7 @@ const router = createBrowserRouter([
     path: '/',
     element: (
       <ThemeProvider>
-        <NavBar />
+        
         <App />
       </ThemeProvider>
     )
@@ -47,7 +41,7 @@ const router = createBrowserRouter([
     path: '/login',
     element: (
       <ThemeProvider>
-        <NavBar />
+        
         <Login />
       </ThemeProvider>
     )
@@ -57,7 +51,7 @@ const router = createBrowserRouter([
     element: (
       <ThemeProvider>
         <RequireAuth>
-          <NavBar />
+         
           <Admin />
         </RequireAuth>
       </ThemeProvider>

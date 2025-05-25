@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 
-// Create theme context
+// Create theme context with light mode only
 const ThemeContext = createContext({
   isDark: false,
   toggleTheme: () => {},
@@ -11,43 +11,12 @@ export const useTheme = () => useContext(ThemeContext);
 
 // Theme provider component
 export const ThemeProvider = ({ children }) => {
-  // Initialize theme state from local storage or system preference
-  const [isDark, setIsDark] = useState(() => {
-    // Check localStorage first
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      return savedTheme === 'dark';
-    }
-    // Fall back to system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
-
-  // Listen for custom theme toggle events (from toggleTheme.js)
+  // Apply light theme only
   useEffect(() => {
-    const handleCustomThemeToggle = (event) => {
-      console.log('Caught custom theme toggle event:', event.detail);
-      setIsDark(event.detail.isDark);
-    };
-    
-    document.addEventListener('themeToggled', handleCustomThemeToggle);
-    
-    return () => {
-      document.removeEventListener('themeToggled', handleCustomThemeToggle);
-    };
-  }, []);
-
-  // Apply theme class to document element
-  useEffect(() => {
-    // Apply theme
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.style.colorScheme = 'dark';
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.style.colorScheme = 'light';
-      localStorage.setItem('theme', 'light');
-    }
+    // Force light mode only
+    document.documentElement.classList.remove('dark');
+    document.documentElement.style.colorScheme = 'light';
+    localStorage.setItem('theme', 'light');
     
     // Force a refresh of styles by triggering a reflow with a small delay
     const forceReflow = () => {
@@ -60,23 +29,18 @@ export const ThemeProvider = ({ children }) => {
     
     forceReflow();
     
-    // Log theme change for debugging
-    console.log('Theme changed to:', isDark ? 'dark' : 'light');
-  }, [isDark]);
+    // Log theme for debugging
+    console.log('Theme set to: light (dark mode disabled)');
+  }, []);
 
-  // Toggle theme function
+  // Toggle theme function - now does nothing
   const toggleTheme = () => {
-    console.log('Toggle theme called');
-    setIsDark(prev => {
-      const newValue = !prev;
-      console.log('Setting isDark to:', newValue);
-      return newValue;
-    });
+    console.log('Toggle theme called - ignoring as app is light mode only');
   };
 
-  // Context value
+  // Context value - always light mode
   const contextValue = {
-    isDark,
+    isDark: false,
     toggleTheme,
   };
 
