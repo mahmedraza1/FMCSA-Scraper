@@ -11,7 +11,7 @@ node_modules
 dist
 dist-react
 *.local
-.env
+
 .env.production
 design.tldr
 Todos.md
