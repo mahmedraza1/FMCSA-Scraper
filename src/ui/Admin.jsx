@@ -18,8 +18,8 @@ function Admin() {
   };
   
   return (
-    <div className="min-h-screen bg-gray-200 dark:bg-gray-900 p-4 transition-colors">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-200 dark:bg-gray-900 p-4 flex items-center justify-center transition-colors">
+      <div className="max-w-6xl w-full">
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-colors">
           <div className="p-6">
             <div className="flex justify-between items-center mb-6">

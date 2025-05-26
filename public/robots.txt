@@ -1,0 +1,18 @@
+# robots.txt file for Carrier Data Scraper
+
+User-agent: *
+Disallow: /admin
+Disallow: /login
+
+# Allow access to public pages
+Allow: /
+Allow: /index.html
+
+# Prevent bots from accessing backend API
+Disallow: /api/
+
+# Crawl-delay to prevent server overload
+Crawl-delay: 10
+
+# Sitemap
+# Sitemap: https://yourdomain.com/sitemap.xml

@@ -6,6 +6,7 @@ import './accent.css' // Import explicit accent styles
 import App from './App.jsx'
 import Admin from './Admin.jsx'
 import Login from './Login.jsx'
+import NotFound from './NotFound.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import './toggleTheme.js' // Import theme toggle utility for debugging
 import './themeDebug.js' // Import additional theme debugging tools
@@ -54,6 +55,15 @@ const router = createBrowserRouter([
          
           <Admin />
         </RequireAuth>
+      </ThemeProvider>
+    )
+  },
+  {
+    // 404 catch-all route
+    path: '*',
+    element: (
+      <ThemeProvider>
+        <NotFound />
       </ThemeProvider>
     )
   }
