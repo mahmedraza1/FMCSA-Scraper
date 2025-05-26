@@ -13,7 +13,7 @@ function extractCompanyData(html) {
   const hasMainTable = $('th:contains("Entity Type")').length > 0;
 
   if (!hasMainTable) {
-    return { error: '❌ Record not found or table missing' };
+    return { error: 'Record not found' };
   }
 
   const data = {};
@@ -59,12 +59,10 @@ async function fetchMCHtml(MCNumber) {
       });
       
       if (res.status === 403) {
-        console.error(`❌ Access Forbidden (403) for MC/MX Number ${MCNumber} - Possible geo-restriction or IP block`);
         throw new Error('ACCESS_FORBIDDEN');
       }
       
       if (!res.ok) {
-        console.error(`❌ Failed to fetch MC/MX Number ${MCNumber} - Status: ${res.status}`);
         return null;
       }
       
@@ -80,12 +78,10 @@ async function fetchMCHtml(MCNumber) {
       });
       
       if (res.status === 403) {
-        console.error(`❌ Access Forbidden (403) for MC/MX Number ${MCNumber} - Possible geo-restriction or IP block`);
         throw new Error('ACCESS_FORBIDDEN');
       }
       
       if (!res.ok) {
-        console.error(`❌ Failed to fetch MC/MX Number ${MCNumber} - Status: ${res.status}`);
         return null;
       }
       
@@ -97,10 +93,8 @@ async function fetchMCHtml(MCNumber) {
     }
     // Network errors (like disconnections) should be treated similarly to 403 errors
     if (error.message && (error.message.includes('fetch') || error.message.includes('proxy'))) {
-      console.error(`❌ Network error for MC/MX Number ${MCNumber} - Possible VPN disconnect or network issue: ${error.message}`);
       throw new Error('ACCESS_FORBIDDEN'); // Treat network errors like geo-restriction
     }
-    console.error(`❌ Error fetching MC/MX Number ${MCNumber}: ${error.message}`);
     return null;
   }
 }
@@ -134,20 +128,19 @@ export async function scrapeData(
   // Get concurrency limit from appSettings instead of options
   const { getSetting } = await import('../config/appSettings.js');
   const concurrencyLimit = parseInt(getSetting('concurrencyLimit') || 5);
-  console.log(`Using admin-set concurrencyLimit: ${concurrencyLimit}`);
+  
   
   // Initialize proxy manager with proxies from config or environment
   const proxies = options.proxies || getProxies();
   if (proxies && proxies.length > 0) {
     proxyManager.setProxies(proxies);
-    console.log(`Initialized proxy manager with ${proxies.length} proxies.`);
+    
     
     // Do a quick health check at the start
     await proxyManager.healthCheckAllProxies().catch(err => {
-      console.warn(`Proxy health check failed: ${err.message}`);
     });
   } else {
-    console.log('No proxies configured. Using direct connection.');
+    
   }
   
   // Variable to track if scraping should be stopped
@@ -159,7 +152,7 @@ export async function scrapeData(
     const { registerActiveSession, deregisterActiveSession } = await import('./sessionManager.js');
     registerActiveSession(sessionId, () => {
       stopRequested = true;
-      console.log(`Stop requested for scraping session ${sessionId}`);
+      
     });
     
     // Clean up when done
@@ -171,13 +164,12 @@ export async function scrapeData(
     
     // Ensure cleanup happens even if there's an error
     process.on('uncaughtException', (err) => {
-      console.error('Uncaught exception:', err);
       cleanupSession();
     });
     
     // Cleanup on normal termination
     process.on('SIGINT', () => {
-      console.log('Process interrupted');
+      
       cleanupSession();
       process.exit(0);
     });
@@ -373,7 +365,6 @@ export function saveToCSV(data, filePath = null) {
       // For web environment, return the CSV data
       return { success: true, csvData: csv, fileName: 'scraped_data.csv' };
     } catch (error) {
-      console.error('Error generating CSV:', error);
       throw error;
     }
   }

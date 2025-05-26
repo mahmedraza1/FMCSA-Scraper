@@ -2,18 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ProxyManager from './components/ProxyManager';
 import SettingsManager from './components/SettingsManager';
-import ThemeToggle from './components/ThemeToggle';
 import { logout } from './utils/auth';
 
 function Admin() {
   const [activeTab, setActiveTab] = useState('proxies');
   const navigate = useNavigate();
   
-  // Handle manual logout
+  
   const handleLogout = () => {
-    // Clear authentication state
+    
     logout();
-    // Redirect to login page
+    
     navigate('/login');
   };
   
@@ -33,7 +32,7 @@ function Admin() {
                 >
                   Logout
                 </button>
-                <ThemeToggle />
+                
               </div>
             </div>
             

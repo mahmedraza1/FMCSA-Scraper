@@ -32,7 +32,6 @@ function checkPersistentAuth() {
     
     // Basic similarity check - in a real app you'd use a more robust comparison
     if (storedDeviceId && storedDeviceId !== currentDeviceId) {
-      console.warn('Device fingerprint mismatch - possible security concern');
       // Consider adding further security measures here, like requiring re-login
       // For now, we'll allow it but log the warning
     }
@@ -62,7 +61,6 @@ export function login(rememberMe = false) {
     const deviceId = generateDeviceId();
     localStorage.setItem('deviceIdentifier', deviceId);
     
-    console.log('Remember Me enabled with device fingerprinting');
   }
 }
 

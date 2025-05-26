@@ -7,13 +7,13 @@ export function registerActiveSession(sessionId, stopHandler) {
     stopHandler,
     startTime: Date.now()
   });
-  console.log(`Registered active scraping session: ${sessionId}`);
+  
 }
 
 // Deregister a scraping process
 export function deregisterActiveSession(sessionId) {
   activeScrapeSessions.delete(sessionId);
-  console.log(`Deregistered scraping session: ${sessionId}`);
+  
 }
 
 // Stop a scraping process
@@ -21,7 +21,7 @@ export function stopScraping(sessionId) {
   const session = activeScrapeSessions.get(sessionId);
   if (session && typeof session.stopHandler === 'function') {
     session.stopHandler();
-    console.log(`Stopped scraping session: ${sessionId}`);
+    
     return true;
   }
   return false;

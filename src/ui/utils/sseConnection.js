@@ -40,7 +40,6 @@ export class SSEConnectionManager {
           const data = JSON.parse(event.data);
           this.handlers.message(data);
         } catch (error) {
-          console.error('Error parsing SSE message:', error);
         }
       };
       
@@ -50,12 +49,10 @@ export class SSEConnectionManager {
           this.reconnectAttempts = 0; // Reset reconnect attempts on successful connection
           this.handlers.connected(data);
         } catch (error) {
-          console.error('Error parsing SSE connected event:', error);
         }
       });
       
       this.eventSource.onerror = (error) => {
-        console.error('SSE connection error:', error);
         
         // Close the connection
         this.eventSource.close();
@@ -66,7 +63,6 @@ export class SSEConnectionManager {
           this.reconnectAttempts++;
           const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
           
-          console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts}) in ${delay}ms...`);
           
           setTimeout(() => {
             this.createConnection();
@@ -80,7 +76,6 @@ export class SSEConnectionManager {
       
       return true;
     } catch (error) {
-      console.error('Error creating SSE connection:', error);
       this.handlers.error(error);
       return false;
     }

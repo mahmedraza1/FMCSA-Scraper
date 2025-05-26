@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import ThemeToggle from './components/ThemeToggle';
 import { login } from './utils/auth';
 import { API_URL } from './utils/env';
 
@@ -62,7 +61,6 @@ function Login() {
         setError(data.message || 'Invalid username or password');
       }
     } catch (err) {
-      console.error('Login error:', err);
       setError('An error occurred during login. Please try again.');
     } finally {
       setLoading(false);
@@ -77,7 +75,7 @@ function Login() {
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 transition-colors">
               Admin Login
             </h1>
-            <ThemeToggle />
+            
           </div>
           
           {error && (

@@ -28,7 +28,6 @@ export function initAntiDevTools(options = {}) {
 
   // Only run in production mode or if forceEnable is true
   if (import.meta.env.MODE !== 'production' && !settings.forceEnable) {
-    console.warn('Anti-DevTools protection is disabled in development mode');
     return;
   }
 
@@ -93,5 +92,4 @@ function blockDevToolsShortcuts(onDevToolsOpenCallback) {
 // Reset for testing purposes (not used in production)
 export function resetAntiDevTools() {
   // Nothing to reset in this simplified version
-  console.log('Anti-DevTools protection reset');
 }

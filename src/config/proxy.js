@@ -10,7 +10,6 @@ const __dirname = path.dirname(__filename);
 
 // Path to proxies JSON storage file 
 const proxiesStoragePath = path.join(process.cwd(), 'proxies.json');
-console.log('Proxies JSON storage path:', proxiesStoragePath);
 
 // Legacy text file path (for backwards compatibility)
 const legacyProxiesFilePath = path.join(process.cwd(), 'proxieslist.txt');
@@ -21,19 +20,14 @@ const legacyProxiesFilePath = path.join(process.cwd(), 'proxieslist.txt');
  * @param {number} currentIndex - Current proxy index (optional)
  */
 export function saveProxies(proxies, currentIndex = 0) {
-  try {
-    console.log('Saving proxies to:', proxiesStoragePath);
-    console.log('Current working directory:', process.cwd());
-    
+  try {    
     fs.writeFileSync(proxiesStoragePath, JSON.stringify({
       updatedAt: new Date().toISOString(),
       proxies: proxies,
       currentIndex: currentIndex
     }, null, 2));
-    console.log(`Saved ${proxies.length} proxies to storage with currentIndex ${currentIndex}`);
     return true;
   } catch (error) {
-    console.error(`Failed to save proxies to storage: ${error.message}`);
     return false;
   }
 }
@@ -45,14 +39,11 @@ export function saveProxies(proxies, currentIndex = 0) {
  */
 export function getProxies() {
   // Try to load from JSON storage first
-  console.log('Checking for proxies.json at:', proxiesStoragePath);
-  console.log('File exists?', fs.existsSync(proxiesStoragePath));
   
   if (fs.existsSync(proxiesStoragePath)) {
     try {
       const data = JSON.parse(fs.readFileSync(proxiesStoragePath, 'utf8'));
       if (Array.isArray(data.proxies)) {
-        console.log(`Loaded ${data.proxies.length} proxies from JSON storage`);
         
         // If the file contains a currentIndex, use it to set the proxy index
         if (data.currentIndex !== undefined && 
@@ -68,17 +59,16 @@ export function getProxies() {
         return data.proxies;
       }
     } catch (error) {
-      console.error(`Error loading proxies from JSON storage: ${error.message}`);
+      // Error loading proxies from JSON storage
     }
   }
 
   // Fall back to legacy text file if JSON storage doesn't exist or is invalid
   if (fs.existsSync(legacyProxiesFilePath)) {
-    console.log('Using legacy proxies list file as fallback');
     return parseProxiesFromFile();
   }
 
-  console.warn('No proxy storage found. Using empty proxy list.');
+  // No proxy storage found. Using empty proxy list.
   return [];
 }
 
@@ -91,7 +81,6 @@ export function getProxies() {
 function parseProxiesFromFile() {
   try {
     if (!fs.existsSync(legacyProxiesFilePath)) {
-      console.warn(`Legacy proxies file not found at ${legacyProxiesFilePath}`);
       return [];
     }
 
@@ -144,8 +133,6 @@ function parseProxiesFromFile() {
       }
     }
     
-    console.log(`Parsed ${proxies.length} proxies from legacy file`);
-    
     // Save to the new JSON format for future use
     if (proxies.length > 0) {
       saveProxies(proxies);
@@ -153,7 +140,6 @@ function parseProxiesFromFile() {
     
     return proxies;
   } catch (error) {
-    console.error(`Error parsing proxies from file: ${error.message}`);
     return [];
   }
 }
@@ -203,7 +189,6 @@ export async function deleteProxies(indexesToDelete) {
       proxies: proxies
     };
   } catch (error) {
-    console.error(`Error deleting proxies: ${error.message}`);
     return {
       success: false,
       error: error.message

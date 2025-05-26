@@ -18,7 +18,6 @@ const DebugInfo = () => {
     setAppInfo(info);
     
     // Log to console as well
-    console.log('Debug Info:', info);
   }, []);
     return (
     <div className="fixed bottom-0 left-0 p-4 bg-black bg-opacity-80 dark:bg-opacity-70 text-white text-xs max-w-full overflow-auto max-h-48 transition-colors">

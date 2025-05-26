@@ -2,70 +2,38 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import './index.css'
-import './accent.css' // Import explicit accent styles
+import './accent.css' 
 import App from './App.jsx'
 import Admin from './Admin.jsx'
 import Login from './Login.jsx'
 import NotFound from './NotFound.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
-import './toggleTheme.js' // Import theme toggle utility for debugging
-import './themeDebug.js' // Import additional theme debugging tools
-import { ThemeProvider } from './components/ThemeProvider'; // Import the ThemeProvider
-import { initAntiDevTools } from '../utils/antiDevTools.js'; // Import anti-devtools utilities
-// import NavBar from './components/NavBar.jsx'
 
-// Ensure light theme is initialized before rendering
-const initializeTheme = () => {
-  // Always use light mode
-  document.documentElement.classList.remove('dark');
-  document.documentElement.style.colorScheme = 'light';
-  localStorage.setItem('theme', 'light');
-  
-  console.log('Light mode initialized from main.jsx (dark mode disabled)');
-};
+import { initAntiDevTools } from '../utils/antiDevTools.js'; 
 
-// Run immediately
-initializeTheme();
 
-// Set up router
+
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <ThemeProvider>
-        
-        <App />
-      </ThemeProvider>
-    )
+    element: <App />
   },
   {
     path: '/login',
-    element: (
-      <ThemeProvider>
-        
-        <Login />
-      </ThemeProvider>
-    )
+    element: <Login />
   },
   {
     path: '/admin',
     element: (
-      <ThemeProvider>
-        <RequireAuth>
-         
-          <Admin />
-        </RequireAuth>
-      </ThemeProvider>
+      <RequireAuth>
+        <Admin />
+      </RequireAuth>
     )
   },
   {
-    // 404 catch-all route
+    
     path: '*',
-    element: (
-      <ThemeProvider>
-        <NotFound />
-      </ThemeProvider>
-    )
+    element: <NotFound />
   }
 ]);
 
@@ -75,17 +43,17 @@ createRoot(document.getElementById('root')).render(
   </StrictMode>,
 )
 
-// Initialize simplified anti-devtools protections
-// In production builds, this will be active automatically
-// For testing in development, we're forcing it to be enabled
+
+
+
 initAntiDevTools({
-  disableRightClick: true, // Block all right-clicks sitewide
-  disableKeyboardShortcuts: true, // Only blocks developer tool shortcuts
-  forceEnable: true, // Force enable for pre-production testing
+  disableRightClick: true, 
+  disableKeyboardShortcuts: true, 
+  forceEnable: true, 
   onDevToolsOpen: () => {
-    // Security event logging
+    
     try {
-      // Log to server
+      
       fetch('/api/security/log', {
         method: 'POST',
         headers: {
@@ -97,13 +65,13 @@ initAntiDevTools({
           url: window.location.href,
           userAgent: navigator.userAgent
         }),
-      }).catch(() => {}); // Silent fail
+      }).catch(() => {}); 
     } catch (e) {
-      // Ignore errors
+      
     }
   },
   onTamperAttempt: (details) => {
-    // Log tampering attempts
+    
     try {
       fetch('/api/security/log', {
         method: 'POST',
@@ -117,9 +85,9 @@ initAntiDevTools({
           url: window.location.href,
           userAgent: navigator.userAgent
         }),
-      }).catch(() => {}); // Silent fail
+      }).catch(() => {}); 
     } catch (e) {
-      // Ignore errors
+      
     }
   }
 });

@@ -27,7 +27,7 @@ class ProxyManager {
     this.proxies = proxies;
     this.consecutiveFailures = Array(proxies.length).fill(0);
     this.currentProxyIndex = 0;
-    console.log(`Set ${proxies.length} proxies for rotation.`);
+    
     
     // Start health checks
     this.startHealthChecks();
@@ -74,7 +74,7 @@ class ProxyManager {
     // Only rotate if forced or the current proxy has failed too many times
     if (forced || this.consecutiveFailures[this.currentProxyIndex] >= this.maxConsecutiveFailures) {
       this.currentProxyIndex = (this.currentProxyIndex + 1) % this.proxies.length;
-      console.log(`Rotated to proxy: ${this.getCurrentProxy()}`);
+      }`);
     }
     
     return this.getCurrentProxy();
@@ -91,7 +91,7 @@ class ProxyManager {
     this.consecutiveFailures[this.currentProxyIndex]++;
     this.failedRequests++;
     
-    console.log(`Proxy ${this.getCurrentProxy()} failed. Consecutive failures: ${this.consecutiveFailures[this.currentProxyIndex]}`);
+    } failed. Consecutive failures: ${this.consecutiveFailures[this.currentProxyIndex]}`;
     
     if (this.consecutiveFailures[this.currentProxyIndex] >= this.maxConsecutiveFailures) {
       this.rotateProxy(true);
@@ -151,7 +151,6 @@ class ProxyManager {
         this.markCurrentProxySuccessful();
         return response;
       } catch (error) {
-        console.error(`Proxy fetch error with ${this.getCurrentProxy()}: ${error.message}`);
         this.markCurrentProxyFailed();
         retries++;
         
@@ -191,10 +190,10 @@ class ProxyManager {
    * Check health of all proxies
    */
   async healthCheckAllProxies() {
-    console.log('Running health check on all proxies...');
+    
     
     if (this.proxies.length === 0) {
-      console.log('No proxies configured for health check.');
+      
       return;
     }
     
@@ -207,22 +206,20 @@ class ProxyManager {
       try {
         // Use a reliable endpoint to test proxy
         const testUrl = 'https://httpbin.org/ip';
-        console.log(`Testing proxy ${this.proxies[i]} with ${testUrl}`);
+        
         
         const response = await this.fetchWithProxy(testUrl, {}, 1);
         
         if (response.ok) {
           const data = await response.json();
-          console.log(`✅ Proxy ${this.proxies[i]} is working. IP: ${data.origin}`);
+          
           this.consecutiveFailures[i] = 0;
           results.push({ proxy: this.proxies[i], working: true, ip: data.origin });
         } else {
-          console.error(`❌ Proxy ${this.proxies[i]} health check failed with status: ${response.status}`);
           this.consecutiveFailures[i]++;
           results.push({ proxy: this.proxies[i], working: false, error: `Status: ${response.status}` });
         }
       } catch (error) {
-        console.error(`❌ Proxy ${this.proxies[i]} health check error: ${error.message}`);
         this.consecutiveFailures[i]++;
         results.push({ proxy: this.proxies[i], working: false, error: error.message });
       }
@@ -278,10 +275,10 @@ class ProxyManager {
   setCurrentProxyIndex(index) {
     if (index >= 0 && index < this.proxies.length) {
       this.currentProxyIndex = index;
-      console.log(`Current proxy index set to ${index}`);
+      
     } else if (this.proxies.length > 0) {
       this.currentProxyIndex = 0;
-      console.log('Invalid index provided, reset to 0');
+      
     }
   }
 }

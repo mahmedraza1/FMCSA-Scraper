@@ -29,7 +29,6 @@ export function getSettings() {
       return defaultSettings;
     }
   } catch (error) {
-    console.error('Error reading settings file:', error);
     return defaultSettings;
   }
 }
@@ -45,7 +44,6 @@ export function saveSettings(settings) {
     fs.writeFileSync(settingsFilePath, JSON.stringify(newSettings, null, 2), 'utf8');
     return true;
   } catch (error) {
-    console.error('Error saving settings:', error);
     return false;
   }
 }
@@ -57,7 +55,6 @@ export function updateSetting(key, value) {
     settings[key] = value;
     return saveSettings(settings);
   } catch (error) {
-    console.error(`Error updating setting ${key}:`, error);
     return false;
   }
 }
@@ -68,7 +65,6 @@ export function getSetting(key) {
     const settings = getSettings();
     return settings[key] !== undefined ? settings[key] : defaultSettings[key];
   } catch (error) {
-    console.error(`Error getting setting ${key}:`, error);
     return defaultSettings[key];
   }
 }

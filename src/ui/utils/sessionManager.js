@@ -14,7 +14,6 @@ class SessionManager {
    */
   init() {
     // Basic initialization - nothing to do in simplified version
-    console.log('Session manager initialized');
   }
 
   /**

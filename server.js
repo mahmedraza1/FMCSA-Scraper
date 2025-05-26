@@ -1,56 +1,3 @@
-/**
- * Transportation Company Scraper - Backend Server
- * 
- * This Express.js server provides API endpoints for the Transportation Company Scraper
- * web application, handling both the scraping functionality and security features.
- * 
- * SECURITY FEATURES:
- * 
- * 1. Anti-Developer Tools Protection:
- *    - Client-side detection of developer tools being opened
- *    - Automatic security event logging when tampering is detected
- *    - Multiple layers of protection against code inspection
- * 
- * 2. Server-Side Security:
- *    - Rate limiting for security-sensitive endpoints
- *    - Detailed security event logging
- *    - Unique event IDs for audit trails
- * 
- * 3. Production Hardening:
- *    - Code obfuscation in production builds
- *    - Console output suppression
- *    - Protection against browser inspection tools
- * 
- * For complete setup instructions, see README.md
- */
-
-/**
- * Transportation Company Scraper - Backend Server
- * 
- * This Express.js server provides API endpoints for the Transportation Company Scraper
- * web application, handling both the scraping functionality and security features.
- * 
- * SECURITY FEATURES:
- * 
- * 1. Anti-Developer Tools Protection:
- *    - Client-side detection of developer tools being opened
- *    - Automatic security event logging when tampering is detected
- *    - Multiple layers of protection against code inspection
- * 
- * 2. Server-Side Security:
- *    - Rate limiting for security-sensitive endpoints
- *    - Detailed security event logging
- *    - Unique event IDs for audit trails
- * 
- * 3. Production Hardening:
- *    - Code obfuscation in production builds
- *    - Console output suppression
- *    - Protection against browser inspection tools
- * 
- * For complete setup instructions, see README.md
- */
-
-// server.js - Express.js backend for Scraper app
 import express from 'express';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
@@ -93,12 +40,12 @@ function cleanupInactiveSessions() {
         try {
           client.end(); // End the SSE connection
         } catch (e) {
-          console.error(`Error closing SSE connection for session ${sessionId}:`, e);
+          // Error closing SSE connection for session
         }
         clients.delete(sessionId);
       }
       sessionActivity.delete(sessionId);
-      console.log(`Cleaned up inactive session: ${sessionId}`);
+      // Cleaned up inactive session
     }
   });
 }
@@ -166,7 +113,7 @@ app.get('/api/progress-events/:sessionId', (req, res) => {
   // Handle client disconnect
   req.on('close', () => {
     clients.delete(sessionId);
-    console.log(`Client disconnected: ${sessionId}`);
+    // Client disconnected
   });
 });
 
@@ -207,7 +154,7 @@ app.post('/api/scrape', async (req, res) => {
       });
     }
     
-    console.log(`Starting scrape with session ${sessionId}, concurrencyLimit: ${concurrencyLimit} (admin-controlled)`);
+    // Starting scrape with session
     
     // Create a function to handle progress updates and send via SSE to this specific session
     const progressCallback = (data) => {
@@ -254,7 +201,7 @@ app.post('/api/scrape', async (req, res) => {
     
     // Results were already sent in the initial response
   } catch (error) {
-    console.error(`Scraping error in session ${sessionId}:`, error);
+    // Scraping error in session
     
     // Send error update via SSE to this specific session
     sendSSEUpdateToSession(sessionId, {
@@ -300,7 +247,7 @@ app.post('/api/stop-scrape', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error(`Error stopping scrape session ${sessionId}:`, error);
+    // Error stopping scrape session
     return res.status(500).json({
       success: false,
       error: `Failed to stop scraping: ${error.message}`
@@ -331,7 +278,7 @@ app.post('/api/save-csv', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('CSV save error:', error);
+    // CSV save error
     
     // Send error via SSE if sessionId is available
     if (req.body.sessionId) {
@@ -354,7 +301,7 @@ app.get('/api/admin/settings', authenticateAdmin, (req, res) => {
       settings
     });
   } catch (error) {
-    console.error('Error retrieving admin settings:', error);
+    // Error retrieving admin settings
     res.status(500).json({
       success: false,
       error: error.message || 'An error occurred while retrieving admin settings'
@@ -400,7 +347,7 @@ app.post('/api/admin/settings', authenticateAdmin, (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error updating admin settings:', error);
+    // Error updating admin settings
     res.status(500).json({
       success: false,
       error: error.message || 'An error occurred while updating admin settings'
@@ -443,7 +390,7 @@ app.get('/api/proxy/status', authenticateAdmin, async (req, res) => {
       storage: storageInfo
     });
   } catch (error) {
-    console.error('Error in proxy status endpoint:', error);
+    // Error in proxy status endpoint
     res.status(500).json({ 
       success: false, 
       error: error.message || 'An error occurred while getting proxy status'
@@ -471,7 +418,7 @@ app.post('/api/proxy/configure', authenticateAdmin, async (req, res) => {
     
     // Run a health check
     proxyManager.healthCheckAllProxies().catch(err => {
-      console.warn(`Proxy health check failed: ${err.message}`);
+      // Proxy health check failed
     });
     
     res.json({ 
@@ -480,7 +427,7 @@ app.post('/api/proxy/configure', authenticateAdmin, async (req, res) => {
       stats: proxyManager.getStats()
     });
   } catch (error) {
-    console.error('Error configuring proxies:', error);
+    // Error configuring proxies
     res.status(500).json({ 
       success: false, 
       error: error.message || 'An error occurred while configuring proxies'
@@ -524,7 +471,7 @@ app.post('/api/proxy/delete', authenticateAdmin, async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Error deleting proxies:', error);
+    // Error deleting proxies
     res.status(500).json({ 
       success: false, 
       error: error.message 
@@ -545,7 +492,7 @@ app.post('/api/proxy/rotate', authenticateAdmin, async (req, res) => {
       const saved = saveProxies(currentProxies, proxyManager.getCurrentProxyIndex());
       
       if (!saved) {
-        console.warn('Failed to save proxies after rotation');
+        // Failed to save proxies after rotation
       }
     }
     
@@ -556,7 +503,7 @@ app.post('/api/proxy/rotate', authenticateAdmin, async (req, res) => {
       stats: proxyManager.getStats()
     });
   } catch (error) {
-    console.error('Error rotating proxy:', error);
+    // Error rotating proxy
     res.status(500).json({ 
       success: false, 
       error: error.message || 'An error occurred while rotating proxy'
@@ -576,14 +523,8 @@ app.post('/api/security/log', (req, res) => {
     const eventId = `SEC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     
     // Log security event with more detailed information
-    console.warn(`SECURITY EVENT [${eventId}]: ${event} at ${timestamp}`);
-    console.warn(`URL: ${url}`);
-    console.warn(`User Agent: ${userAgent}`);
-    console.warn(`IP Address: ${ip}`);
-    
-    if (details) {
-      console.warn('Event Details:', JSON.stringify(details));
-    }
+    // Security events would be logged here in production environment
+    // Event details would typically include eventId, timestamp, URL, user agent, IP address, etc.
     
     // In a production environment, you might want to:
     // 1. Log to a secure database
@@ -621,7 +562,7 @@ app.post('/api/security/log', (req, res) => {
     res.status(200).send();
   } catch (error) {
     // Log the error but don't expose it to the client
-    console.error('Error logging security event:', error);
+    // Error logging security event
     res.status(200).send(); // Still return 200 to not indicate success/failure
   }
 });
@@ -639,7 +580,7 @@ app.post('/api/auth/login', (req, res) => {
   if (username === adminCredentials.username && password === adminCredentials.password) {
     // Log device info for security monitoring (in a real app, you'd store this)
     if (rememberMe && deviceInfo) {
-      console.log(`Admin login with "Remember Me" from device: ${JSON.stringify(deviceInfo)}`);
+      // Admin login with "Remember Me" from device
     }
     
     // Successful login
@@ -659,7 +600,7 @@ app.post('/api/auth/login', (req, res) => {
 
 // Start server
 app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
+  // Server running on port
   
   try {
     // Dynamically import the getProxies function
@@ -669,17 +610,17 @@ app.listen(PORT, async () => {
     const proxies = getProxies();
     if (proxies && proxies.length > 0) {
       proxyManager.setProxies(proxies);
-      console.log(`Initialized proxy manager with ${proxies.length} proxies.`);
+      // Initialized proxy manager with proxies
       
       // Run health check on all proxies
       proxyManager.healthCheckAllProxies().catch(err => {
-        console.warn(`Initial proxy health check failed: ${err.message}`);
+        // Initial proxy health check failed
       });
     } else {
-      console.log('No proxies configured. Using direct connections.');
+      // No proxies configured. Using direct connections.
     }
   } catch (error) {
-    console.error('Error initializing proxy manager:', error);
+    // Error initializing proxy manager
   }
   
   // Set up regular cleanup of inactive sessions

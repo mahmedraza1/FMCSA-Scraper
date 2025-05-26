@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import ScraperForm from './components/ScraperForm'
 import ScraperProgress from './components/ScraperProgress'
 import ResultsModal from './components/ResultsModal'
-import ThemeToggle from './components/ThemeToggle'
 import { SSEConnectionManager } from './utils/sseConnection'
 import { API_URL } from './utils/env'
 
@@ -24,31 +23,30 @@ function App() {
   const [currentSessionId, setCurrentSessionId] = useState(null);
   const [isStoppingInProgress, setIsStoppingInProgress] = useState(false);
 
-  // Initialize SSE manager on component mount
+  
   useEffect(() => {
     const manager = new SSEConnectionManager(API_URL);
     
-    // Set up event handlers
+    
     manager.onMessage(handleProgressUpdate);
     
     manager.onError((error) => {
-      console.error('SSE manager error:', error);
       setLogs(prev => [...prev, `❌ Connection error: ${error.message}`]);
       
-      // If scraping is still active, show an error
+      
       if (isScrapingActive) {
         setError('Lost connection to the server. Please try again.');
       }
     });
     
     manager.onConnected((data) => {
-      console.log('SSE connection established with session ID:', data.sessionId);
+      
       setLogs(prev => [...prev, `🔌 Connected to server with session: ${data.sessionId}`]);
     });
     
     manager.onDisconnected(() => {
-      console.log('SSE connection closed');
-      // Only show disconnection message if scraping is still active
+      
+      
       if (isScrapingActive) {
         setLogs(prev => [...prev, `🔌 Disconnected from server`]);
       }
@@ -56,20 +54,19 @@ function App() {
     
     setSseManager(manager);
     
-    // Clean up on component unmount
+    
     return () => {
       manager.disconnect();
     };
   }, []);
   
-  // Update isScrapingActive dependencies for the error handler
+  
   useEffect(() => {
     if (sseManager) {
       sseManager.onError((error) => {
-        console.error('SSE manager error:', error);
         setLogs(prev => [...prev, `❌ Connection error: ${error.message}`]);
         
-        // If scraping is still active, show an error
+        
         if (isScrapingActive) {
           setError('Lost connection to the server. Please try again.');
           setIsScrapingActive(false);
@@ -78,7 +75,7 @@ function App() {
     }
   }, [isScrapingActive, sseManager]);
 
-  // Function to handle scraping action
+  
   const handleStartScraping = async (params) => {
     setIsScrapingActive(true);
     setResults([]);
@@ -87,7 +84,7 @@ function App() {
     setGeoRestrictionWarning(false);
     setIsStoppingInProgress(false);
     
-    // Get the count of MC numbers to display in UI
+    
     const mcNumbersCount = params.mcNumbers.length;
     
     setProgress({
@@ -95,7 +92,7 @@ function App() {
       total: mcNumbersCount,
       successful: 0,
       batchNumber: 0,
-      totalBatches: 0 // Will be updated with server response
+      totalBatches: 0 
     });
     
     try {
@@ -114,16 +111,16 @@ function App() {
       const data = await response.json();
       
       if (data.success) {
-        // Set up SSE connection with the returned session ID
+        
         if (data.sessionId) {
-          // Save the session ID for stopping later
+          
           setCurrentSessionId(data.sessionId);
           
-          // Connect using the SSE manager
+          
           if (sseManager) {
             const connected = sseManager.connect(data.sessionId);
             if (connected) {
-              // Add initial log message with session ID
+              
               setLogs(prev => [...prev, `🔑 Scraping session started: ${data.sessionId}`]);
             } else {
               throw new Error('Failed to establish server connection');
@@ -141,7 +138,6 @@ function App() {
         setIsStoppingInProgress(false);
       }
     } catch (error) {
-      console.error('Error during scraping:', error);
       setError(error.message);
       setIsScrapingActive(false);
       setCurrentSessionId(null);
@@ -149,20 +145,20 @@ function App() {
     }
   };
   
-  // Function to handle stopping an active scrape
+  
   const handleStopScraping = async () => {
     if (!currentSessionId || !isScrapingActive || isStoppingInProgress) {
       return;
     }
     
     try {
-      // Mark that stopping is in progress to prevent multiple clicks
+      
       setIsStoppingInProgress(true);
       
-      // Add a log message
+      
       setLogs(prev => [...prev, `⛔ Sending request to stop scraping...`]);
       
-      // Send the stop request to the API
+      
       const response = await fetch(`${API_URL}/stop-scrape`, {
         method: 'POST',
         headers: {
@@ -174,33 +170,32 @@ function App() {
       const data = await response.json();
       
       if (data.success) {
-        // The server will send a 'manualStop' message via SSE
-        // We'll handle actually stopping the UI in the handleProgressUpdate function
+        
+        
         setLogs(prev => [...prev, `⏹️ Stop request sent successfully`]);
       } else {
         setLogs(prev => [...prev, `❌ Failed to stop scraping: ${data.error}`]);
         setIsStoppingInProgress(false);
       }
     } catch (error) {
-      console.error('Error stopping scrape:', error);
       setLogs(prev => [...prev, `❌ Error stopping scraping: ${error.message}`]);
       setIsStoppingInProgress(false);
     }
   };
   
-  // No longer needed - using SSE manager instead
   
-  // Ensure results modal is closed whenever geo-restriction warning is shown
+  
+  
   useEffect(() => {
     if (geoRestrictionWarning) {
       setShowResults(false);
     }
   }, [geoRestrictionWarning]);
   
-  // Function to handle CSV export
+  
   const handleSaveToCsv = async (data) => {
     try {
-      // Get the current session ID if connected
+      
       let sessionId = null;
       if (sseManager) {
         sessionId = sseManager.sessionId;
@@ -215,7 +210,7 @@ function App() {
       });
       
       if (response.headers.get('Content-Type').includes('text/csv')) {
-        // It's a CSV file download
+        
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -236,17 +231,16 @@ function App() {
         return true;
       }
     } catch (error) {
-      console.error('Error saving CSV:', error);
       setError(error.message);
       return false;
     }
   };
   
-  // Define handleProgressUpdate before using it in useEffect
+  
   const handleProgressUpdate = useCallback((progressData) => {
-    console.log('Progress update:', progressData);
     
-    // Update progress based on data type
+    
+    
     switch (progressData.type) {
       case 'init':
         setProgress(prev => ({
@@ -254,7 +248,7 @@ function App() {
           total: progressData.totalRecords,
           totalBatches: progressData.totalBatches || Math.ceil(progressData.totalRecords / (progressData.concurrencyLimit || 5))
         }));
-        console.log(`Initializing with totalBatches: ${progressData.totalBatches}, concurrencyLimit: ${progressData.concurrencyLimit}`);
+        
         setLogs(prev => [...prev, `🚀 Starting to scrape ${progressData.totalRecords} records in ${progressData.totalBatches} batches (concurrency: ${progressData.concurrencyLimit || 'default'})`]);
         break;
         
@@ -263,7 +257,7 @@ function App() {
           ...prev,
           batchNumber: progressData.batchNumber
         }));
-        console.log(`Processing batch ${progressData.batchNumber}/${progressData.totalBatches}`);
+        
         setLogs(prev => [...prev, `📊 Starting batch ${progressData.batchNumber}/${progressData.totalBatches}`]);
         break;
         
@@ -289,9 +283,9 @@ function App() {
         
       case 'accessForbidden':
         setLogs(prev => [...prev, `⚠️ MC/MX ${progressData.mcNumber}: ${progressData.error}`]);
-        // Always update the error message to show the latest count of consecutive errors
+        
         setGeoRestrictionWarning(true);
-        // Make sure results modal is closed when geo-restriction errors occur
+        
         setShowResults(false);
         setError(`Access to SAFER website may be blocked. Detected ${progressData.error.match(/\((\d+)\/(\d+)\)/)?.[1] || '?'} of 5 consecutive access errors. If this continues, scraping will stop automatically.`);
         break;
@@ -300,7 +294,7 @@ function App() {
         setLogs(prev => [...prev, `⛔ ${progressData.message}`]);
         setError('Detected 5 consecutive geo-restriction errors. Scraping has been automatically stopped to prevent wasted resources. Please follow this to make sure your app works.');
         setGeoRestrictionWarning(true);
-        // Prevent showing results when geo-restriction occurs
+        
         setShowResults(false);
         break;
         
@@ -327,16 +321,16 @@ function App() {
         }
         if (progressData.results) {
           setResults(progressData.results);
-          // Only show results if there was no geo-restriction warning and we have results
+          
           if (!geoRestrictionWarning && progressData.results.length > 0) {
             setShowResults(true);
           } else if (geoRestrictionWarning) {
-            // Explicitly ensure results are not shown with geo-restriction warnings
+            
             setShowResults(false);
           }
         }
         
-        // Set scraping to inactive and close the SSE connection
+        
         setTimeout(() => {
           setIsScrapingActive(false);
           setCurrentSessionId(null);
@@ -351,7 +345,7 @@ function App() {
         setLogs(prev => [...prev, `❌ Error: ${progressData.message}`]);
         setError(progressData.message);
         
-        // Set scraping to inactive and close the SSE connection if this is a fatal error
+        
         if (progressData.fatal) {
           setTimeout(() => {
             setIsScrapingActive(false);
@@ -365,7 +359,7 @@ function App() {
         break;
         
       default:
-        // Handle unknown progress type
+        
         if (progressData.message) {
           setLogs(prev => [...prev, `ℹ️ ${progressData.message}`]);
         }
@@ -381,7 +375,7 @@ function App() {
             <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 transition-colors">
               Carrier Data Scraper
             </h1>
-            <ThemeToggle />
+            
           </div>
           
           {error && geoRestrictionWarning && (

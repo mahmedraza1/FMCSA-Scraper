@@ -62,7 +62,6 @@ const ProxyManager = () => {
       const data = await response.json();
       setProxyStats(data);
     } catch (err) {
-      console.error('Failed to fetch proxy status:', err);
       setError('Failed to fetch proxy status. You may not have permission to access this feature.');
     } finally {
       setLoading(false);
@@ -103,7 +102,6 @@ const ProxyManager = () => {
       setNewProxies('');
       setShowRotationPrompt(true);
     } catch (err) {
-      console.error('Failed to configure proxies:', err);
       setError('Failed to configure proxies. Check format and try again.');
     } finally {
       setLoading(false);
@@ -134,7 +132,6 @@ const ProxyManager = () => {
       // Hide the rotation prompt
       setShowRotationPrompt(false);
     } catch (err) {
-      console.error('Failed to rotate proxy:', err);
       setError('Failed to rotate proxy.');
     } finally {
       setLoading(false);
@@ -217,7 +214,6 @@ const ProxyManager = () => {
       setSelectedProxies([]);
       setDeleteConfirmOpen(false);
     } catch (err) {
-      console.error('Failed to delete proxies:', err);
       setError('Failed to delete proxies. Please try again.');
     } finally {
       setLoading(false);

@@ -22,7 +22,6 @@ const ScraperForm = ({ onStartScraping, isScrapingActive }) => {
           }
         }
       } catch (error) {
-        console.error('Error fetching max records setting:', error);
         // Use default value on error
       }
     };
